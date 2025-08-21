@@ -1,0 +1,60 @@
+services:
+  backend:
+    build: ./backend
+    container_name: mock-service-backend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/data:/app/data
+      - ./backend:/app
+      - ./logs:/app/logs
+    environment:
+      - EXTERNAL_PORT=8080
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+      - LOG_LEVEL=INFO
+      - LOG_MAX_SIZE=50MB
+      - LOG_BACKUP_COUNT=10
+      - LOG_ROTATION_TIME=1d
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "10"       
+        compress: "true"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build: ./frontend
+    container_name: mock-service-frontend
+    ports:
+      - "8002:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"   
+        max-file: "5"       
+        compress: "true"    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mock_data:
+    driver: local
+  logs:
+    driver: local
+
+networks:
+  default:
+    name: mock-service-network 
