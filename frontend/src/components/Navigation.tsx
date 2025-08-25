@@ -109,7 +109,9 @@ const Navigation: React.FC = () => {
       style={{
         background: 'linear-gradient(135deg, #1a4a57 0%, #25606f 50%, #0f3940 100%)',
         boxShadow: '4px 0 20px rgba(37, 96, 111, 0.2)',
-        position: 'relative',
+        position: 'fixed',
+        top: 0,
+        left: 0,
         zIndex: 100,
         height: '100vh',
         overflow: 'hidden'

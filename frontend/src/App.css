@@ -23,6 +23,7 @@
 }
 
 .main-layout {
+  margin-left: 280px;
   transition: var(--transition);
 }
 

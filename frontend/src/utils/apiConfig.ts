@@ -43,6 +43,13 @@ export class ApiConfig {
   }
 
   /**
+   * Проверяет, инициализирован ли ApiConfig
+   */
+  static isReady(): boolean {
+    return this.isInitialized && this.settings !== null
+  }
+
+  /**
    * Возвращает полный базовый URL для API
    */
   static getBaseUrl(): string {

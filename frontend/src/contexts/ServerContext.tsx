@@ -62,9 +62,18 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({ children }) => {
   }
 
   useEffect(() => {
-    // Инициализируем currentApiUrl с актуальными настройками
-    setCurrentApiUrl(ApiConfig.getBaseUrl())
-    fetchServerInfo()
+    const initializeWithApiConfig = async () => {
+      // Дожидаемся полной инициализации ApiConfig
+      while (!ApiConfig.isReady()) {
+        await new Promise(resolve => setTimeout(resolve, 50))
+      }
+      
+      const apiUrl = ApiConfig.getBaseUrl()
+      setCurrentApiUrl(apiUrl)
+      fetchServerInfo()
+    }
+    
+    initializeWithApiConfig()
   }, [])
 
   const value: ServerContextType = {

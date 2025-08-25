@@ -118,7 +118,6 @@ app = FastAPI(
 
 ---
 
-**Разработано командой [SaveLink](https://save-link.ru)**
 """,
     version="1.0.0",
     docs_url="/docs",
@@ -162,10 +161,6 @@ async def root():
             .endpoint { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
             .header { text-align: center; margin-bottom: 40px; }
             .footer { text-align: center; margin-top: 60px; padding: 20px; background: rgba(37, 96, 111, 0.1); border-radius: 10px; }
-            .team-info { display: inline-block; padding: 15px 25px; background: linear-gradient(135deg, #25606f 0%, #3a7a8a 100%); color: white; border-radius: 8px; text-decoration: none; transition: all 0.3s ease; }
-            .team-info:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37, 96, 111, 0.3); }
-            .team-name { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
-            .team-site { font-size: 14px; opacity: 0.9; }
         </style>
     </head>
     <body>
@@ -217,13 +212,6 @@ async def root():
             <h2>🎯 Mock Эндпоинты</h2>
             <p>Все остальные пути обрабатываются как mock эндпоинты согласно настройкам сервисов</p>
             
-            <div class="footer">
-                <p style="margin-bottom: 15px; color: #666;">Разработано командой</p>
-                <a href="https://save-link.ru" target="_blank" class="team-info">
-                    <div class="team-name">SaveLink</div>
-                    <div class="team-site">save-link.ru</div>
-                </a>
-            </div>
         </div>
     </body>
     </html>

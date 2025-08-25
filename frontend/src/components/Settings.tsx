@@ -26,15 +26,10 @@ const Settings: React.FC = () => {
   const loadSettings = async () => {
     setInitialLoading(true)
     try {
-      // Принудительно перезагружаем настройки из файла
-      ApiConfig.clearCache()
-      await ApiConfig.initialize()
+      // Загружаем текущие настройки без перезагрузки кэша
       const settings = ApiConfig.getSettings()
       setCurrentSettings(settings)
       form.setFieldsValue(settings)
-      
-      // Обновляем настройки API в контексте
-      updateApiSettings()
     } catch (error) {
       console.error('Ошибка загрузки настроек:', error)
       message.error('Ошибка загрузки настроек')
