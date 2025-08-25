@@ -2,12 +2,14 @@ export interface ApiSettings {
   domain: string
   port?: string
   protocol: 'http' | 'https'
+  basePath?: string
 }
 
 const DEFAULT_SETTINGS: ApiSettings = {
   domain: 'localhost',
   port: '8080',
-  protocol: 'http'
+  protocol: 'http',
+  basePath: ''
 }
 
 export class ConfigManager {
@@ -165,6 +167,7 @@ export class ConfigManager {
            typeof settings.domain === 'string' &&
            typeof settings.protocol === 'string' &&
            ['http', 'https'].includes(settings.protocol) &&
-           (!settings.port || typeof settings.port === 'string')
+           (!settings.port || typeof settings.port === 'string') &&
+           (!settings.basePath || typeof settings.basePath === 'string')
   }
 }

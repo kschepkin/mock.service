@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useServerInfo } from '../contexts/ServerContext'
+import { ApiConfig } from '../utils/apiConfig'
 import {
   Card,
   Upload,
@@ -56,7 +57,9 @@ const SwaggerImport: React.FC<SwaggerImportProps> = ({ onImportComplete }) => {
   const { serverInfo } = useServerInfo()
   const [importType, setImportType] = useState<'file' | 'content'>('file')
   const [contentType, setContentType] = useState<'json' | 'yaml'>('json')
-  const [basePath, setBasePath] = useState('/api')
+  const configBasePath = ApiConfig.getBasePath() || ''
+  const [additionalPath, setAdditionalPath] = useState('')
+  const fullBasePath = configBasePath + (additionalPath ? `/${additionalPath.replace(/^\/+/, '')}` : '')
   const [swaggerContent, setSwaggerContent] = useState('')
   const [uploadedFile, setUploadedFile] = useState<UploadFile | null>(null)
   
@@ -176,13 +179,13 @@ const SwaggerImport: React.FC<SwaggerImportProps> = ({ onImportComplete }) => {
         const fileToSend = uploadedFile.originFileObj || uploadedFile
         preview = await SwaggerAPI.previewSwaggerImport(
           fileToSend as File,
-          basePath,
+          fullBasePath,
           contentType
         )
       } else {
         preview = await SwaggerAPI.previewSwaggerContentImport(
           swaggerContent,
-          basePath,
+          fullBasePath,
           contentType
         )
       }
@@ -216,13 +219,13 @@ const SwaggerImport: React.FC<SwaggerImportProps> = ({ onImportComplete }) => {
         const fileToSend = uploadedFile.originFileObj || uploadedFile
         importedServices = await SwaggerAPI.importSwaggerFile(
           fileToSend as File,
-          basePath,
+          fullBasePath,
           contentType
         )
       } else {
         importedServices = await SwaggerAPI.importSwaggerContent(
           swaggerContent,
-          basePath,
+          fullBasePath,
           contentType
         )
       }
@@ -271,7 +274,7 @@ const SwaggerImport: React.FC<SwaggerImportProps> = ({ onImportComplete }) => {
       key: 'path',
       render: (path: string) => (
         <Text code>
-          {serverInfo ? `${serverInfo.mock_base_url}${basePath.replace(/\/$/, '')}${path}` : `${basePath}${path}`}
+          {serverInfo ? `${serverInfo.mock_base_url}${path}` : path}
         </Text>
       )
     },
@@ -398,17 +401,36 @@ const SwaggerImport: React.FC<SwaggerImportProps> = ({ onImportComplete }) => {
               </div>
 
               <div>
-                <Text strong>Базовый путь:</Text>
+                <Text strong>Базовый путь из настроек:</Text>
                 <Input
-                  value={basePath}
-                  onChange={(e) => setBasePath(e.target.value)}
-                  placeholder="/api"
+                  value={configBasePath || '(не задан)'}
+                  disabled
                   style={{ width: '200px', marginLeft: '12px' }}
                 />
-                <Tooltip title="Базовый путь будет добавлен к каждому endpoint'у">
+                <Tooltip title="Настраивается в разделе Настройки">
                   <ExclamationCircleOutlined style={{ marginLeft: '8px', color: '#1890ff' }} />
                 </Tooltip>
               </div>
+              
+              <div style={{ marginTop: '16px' }}>
+                <Text strong>Дополнительный путь:</Text>
+                <Input
+                  value={additionalPath}
+                  onChange={(e) => setAdditionalPath(e.target.value)}
+                  placeholder="import, v2, swagger..."
+                  style={{ width: '200px', marginLeft: '12px' }}
+                />
+                <Tooltip title="Добавляется к базовому пути. Итоговый путь: {configBasePath}/{additionalPath}/{endpoint}">
+                  <ExclamationCircleOutlined style={{ marginLeft: '8px', color: '#1890ff' }} />
+                </Tooltip>
+              </div>
+              
+              {(configBasePath || additionalPath) && (
+                <div style={{ marginTop: '12px' }}>
+                  <Text type="secondary">Итоговый префикс: </Text>
+                  <Text code>{fullBasePath || '/'}</Text>
+                </div>
+              )}
             </Space>
           </div>
 

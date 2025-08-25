@@ -69,6 +69,16 @@ if config.port and config.port ~= "" then
     end
 end
 
+-- Validate basePath if provided
+if config.basePath and config.basePath ~= "" then
+    if not string.match(config.basePath, "^[a-zA-Z0-9/_-]*$") then
+        ngx.status = 400
+        ngx.header.content_type = "application/json"
+        ngx.say('{"success": false, "error": "Invalid basePath"}')
+        return
+    end
+end
+
 -- Write to file
 local config_file = "/usr/local/openresty/nginx/html/config/api-settings.json"
 local file = io.open(config_file, "w")

@@ -16,6 +16,7 @@ import { MockService } from '@/types'
 import { MockServiceAPI } from '@/api/mockService'
 import { useServerInfo } from '@/contexts/ServerContext'
 import { copyWithNotification } from '@/utils/clipboard'
+import { ApiConfig } from '@/utils/apiConfig'
 
 const { Title, Text, Paragraph } = Typography
 const { Search } = Input

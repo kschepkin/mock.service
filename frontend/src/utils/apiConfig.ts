@@ -20,7 +20,8 @@ export class ApiConfig {
       this.settings = {
         domain: 'localhost',
         port: '8080',
-        protocol: 'http'
+        protocol: 'http',
+        basePath: ''
       }
       this.isInitialized = true
     }
@@ -35,7 +36,8 @@ export class ApiConfig {
       return {
         domain: 'localhost',
         port: '8080',
-        protocol: 'http'
+        protocol: 'http',
+        basePath: ''
       }
     }
 
@@ -56,6 +58,25 @@ export class ApiConfig {
     const settings = this.getSettings()
     const portPart = settings.port ? `:${settings.port}` : ''
     return `${settings.protocol}://${settings.domain}${portPart}`
+  }
+
+  /**
+   * Возвращает базовый путь для mock сервисов
+   */
+  static getBasePath(): string {
+    const settings = this.getSettings()
+    const basePath = settings.basePath || ''
+    return basePath.startsWith('/') ? basePath : (basePath ? `/${basePath}` : '')
+  }
+
+  /**
+   * Возвращает полный URL с базовым путем для mock сервиса
+   */
+  static getMockServiceUrl(servicePath: string): string {
+    const baseUrl = this.getBaseUrl()
+    const basePath = this.getBasePath()
+    const cleanServicePath = servicePath.startsWith('/') ? servicePath : `/${servicePath}`
+    return `${baseUrl}${basePath}${cleanServicePath}`
   }
 
   /**

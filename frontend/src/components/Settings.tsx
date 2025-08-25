@@ -82,6 +82,13 @@ const Settings: React.FC = () => {
     return `${currentSettings.protocol}://${currentSettings.domain}${portPart}`
   }
 
+  const getCurrentMockUrl = () => {
+    const baseUrl = getCurrentUrl()
+    const basePath = currentSettings.basePath || ''
+    const cleanBasePath = basePath.startsWith('/') ? basePath : (basePath ? `/${basePath}` : '')
+    return `${baseUrl}${cleanBasePath}/test`
+  }
+
   if (initialLoading) {
     return (
       <div style={{ padding: '24px', textAlign: 'center' }}>
@@ -188,6 +195,23 @@ const Settings: React.FC = () => {
             />
           </Form.Item>
 
+          <Form.Item
+            label="Базовый путь (необязательно)"
+            name="basePath"
+            rules={[
+              { 
+                pattern: /^[a-zA-Z0-9\/_-]*$/,
+                message: 'Базовый путь может содержать только буквы, цифры, /, _, -'
+              }
+            ]}
+            extra="Добавляется к URL всех создаваемых mock сервисов. Например: '/api' → http://localhost:8080/api/test"
+          >
+            <Input
+              placeholder="/api, /v1, или оставьте пустым"
+              addonBefore="Базовый путь:"
+            />
+          </Form.Item>
+
           <Divider />
 
           <Form.Item>
@@ -215,27 +239,28 @@ const Settings: React.FC = () => {
 
       <Card title="Примеры использования" size="small">
         <div style={{ marginBottom: '16px' }}>
-          <Text strong>Локальная разработка:</Text>
+          <Text strong>Локальная разработка без базового пути:</Text>
           <br />
-          <Text code>http://localhost:8080</Text>
+          <Text code>http://localhost:8080/test</Text> → путь сервиса: <Text code>/test</Text>
         </div>
         
         <div style={{ marginBottom: '16px' }}>
-          <Text strong>Удаленный сервер с портом:</Text>
+          <Text strong>Локальная разработка с базовым путем /api:</Text>
           <br />
-          <Text code>http://212.109.220.102:8080</Text>
+          <Text code>http://localhost:8080/api/test</Text> → путь сервиса: <Text code>/test</Text>
         </div>
         
         <div style={{ marginBottom: '16px' }}>
-          <Text strong>Удаленный сервер без порта:</Text>
+          <Text strong>Продакшн с базовым путем /v1:</Text>
           <br />
-          <Text code>https://api.example.com</Text>
+          <Text code>https://api.example.com/v1/test</Text> → путь сервиса: <Text code>/test</Text>
         </div>
         
         <div>
-          <Text strong>HTTPS с нестандартным портом:</Text>
+          <Text strong>Базовый путь добавляется автоматически:</Text>
           <br />
-          <Text code>https://api.example.com:8443</Text>
+          <Text type="secondary">При создании сервиса с путем "/test" будет сохранен как </Text>
+          <Text code>"{currentSettings.basePath || ''}/test"</Text>
         </div>
       </Card>
 

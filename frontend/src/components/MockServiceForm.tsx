@@ -16,6 +16,7 @@ import { MockService, MockServiceCreate, ConditionalResponse } from '@/types'
 import { MockServiceAPI } from '@/api/mockService'
 import { useServerInfo } from '@/contexts/ServerContext'
 import { copyWithNotification } from '@/utils/clipboard'
+import { ApiConfig } from '@/utils/apiConfig'
 
 const { Title, Text, Paragraph } = Typography
 const { Panel } = Collapse
@@ -329,8 +330,18 @@ const MockServiceForm: React.FC = () => {
         }
       })
 
+      // Добавляем базовый путь к пути сервиса если он задан, но только если его там еще нет
+      const basePath = ApiConfig.getBasePath()
+      const servicePath = processedValues.path || ''
+      
+      // Проверяем, есть ли уже базовый путь в начале servicePath
+      const fullPath = (!basePath || servicePath.startsWith(basePath)) 
+        ? servicePath 
+        : `${basePath}${servicePath.startsWith('/') ? servicePath : `/${servicePath}`}`
+
       const data: MockServiceCreate = {
         ...processedValues,
+        path: fullPath,
         service_type: processedValues.service_type || 'rest',
         condition_code: conditionCode,
         conditional_responses: cleanedConditionalResponses
