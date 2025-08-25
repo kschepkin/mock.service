@@ -1,9 +1,15 @@
 import axios from 'axios'
 import { MockService, MockServiceCreate, RequestLog } from '@/types'
+import { ApiConfig } from '@/utils/apiConfig'
 
 const api = axios.create({
-  baseURL: '/api',
   timeout: 10000,
+})
+
+// Обновляем baseURL перед каждым запросом
+api.interceptors.request.use((config) => {
+  config.baseURL = ApiConfig.getApiUrl()
+  return config
 })
 
 export class MockServiceAPI {
@@ -67,10 +73,12 @@ export class LogWebSocketClient {
   }
 
   connect(serviceId?: number) {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const settings = ApiConfig.getSettings()
+    const protocol = settings.protocol === 'https' ? 'wss:' : 'ws:'
+    const portPart = settings.port ? `:${settings.port}` : ''
     const url = serviceId 
-      ? `${protocol}//${window.location.host}/ws/logs/${serviceId}`
-      : `${protocol}//${window.location.host}/ws/logs`
+      ? `${protocol}//${settings.domain}${portPart}/ws/logs/${serviceId}`
+      : `${protocol}//${settings.domain}${portPart}/ws/logs`
 
     try {
       this.ws = new WebSocket(url)

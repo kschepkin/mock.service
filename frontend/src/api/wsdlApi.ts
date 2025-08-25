@@ -65,18 +65,18 @@ export interface WSDLTestUrlsResponse {
   note: string
 }
 
-export class WSDLApi {
-  private baseUrl: string
+import { ApiConfig } from '@/utils/apiConfig'
 
-  constructor(baseUrl: string = '/api/wsdl') {
-    this.baseUrl = baseUrl
+export class WSDLApi {
+  private getBaseUrl() {
+    return `${ApiConfig.getApiUrl()}/wsdl`
   }
 
   /**
    * Парсит WSDL документ по URL
    */
   async parseWSDL(wsdlUrl: string): Promise<WSDLParseResult> {
-    const response = await fetch(`${this.baseUrl}/parse`, {
+    const response = await fetch(`${this.getBaseUrl()}/parse`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -98,7 +98,7 @@ export class WSDLApi {
    * Предварительный просмотр mock сервисов
    */
   async previewImport(request: WSDLImportRequest): Promise<MockServicePreview[]> {
-    const response = await fetch(`${this.baseUrl}/preview`, {
+    const response = await fetch(`${this.getBaseUrl()}/preview`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -118,7 +118,7 @@ export class WSDLApi {
    * Импорт WSDL как mock сервисы
    */
   async importWSDL(request: WSDLImportRequest): Promise<WSDLImportResult[]> {
-    const response = await fetch(`${this.baseUrl}/import`, {
+    const response = await fetch(`${this.getBaseUrl()}/import`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -138,7 +138,7 @@ export class WSDLApi {
    * Получить тестовые WSDL URLs
    */
   async getTestUrls(): Promise<WSDLTestUrlsResponse> {
-    const response = await fetch(`${this.baseUrl}/test-urls`)
+    const response = await fetch(`${this.getBaseUrl()}/test-urls`)
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)

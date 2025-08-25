@@ -1,4 +1,4 @@
-const API_BASE_URL = '/api'
+import { ApiConfig } from '@/utils/apiConfig'
 
 export interface ServerInfo {
   base_url: string
@@ -9,10 +9,8 @@ export interface ServerInfo {
 }
 
 export class ServerAPI {
-  private static baseUrl = `${API_BASE_URL}/server`
-
   static async getServerInfo(): Promise<ServerInfo> {
-    const response = await fetch(`${this.baseUrl}/info`)
+    const response = await fetch(`${ApiConfig.getApiUrl()}/server/info`)
 
     if (!response.ok) {
       throw new Error('Не удалось получить информацию о сервере')

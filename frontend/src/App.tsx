@@ -7,6 +7,7 @@ import MockServiceForm from '@/components/MockServiceForm'
 import LogsPage from '@/components/LogsPage'
 import SwaggerImport from '@/components/SwaggerImport'
 import WSDLImport from '@/components/WSDLImport'
+import Settings from '@/components/Settings'
 import { ServerProvider } from '@/contexts/ServerContext'
 import './App.css'
 
@@ -90,6 +91,7 @@ function App() {
                 <Route path="/wsdl-import" element={<WSDLImport />} />
                 <Route path="/logs" element={<LogsPage />} />
                 <Route path="/logs/:serviceId" element={<LogsPage />} />
+                <Route path="/settings" element={<Settings />} />
               </Routes>
             </div>
           </Content>

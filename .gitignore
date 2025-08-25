@@ -109,3 +109,4 @@ backend/data/
 frontend/package-lock.json
 doc.json
 .DS_Store
+CLAUDE.md

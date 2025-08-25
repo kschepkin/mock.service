@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { ServerAPI, ServerInfo } from '../api/serverApi'
+import { ApiConfig } from '../utils/apiConfig'
 
 interface ServerContextType {
   serverInfo: ServerInfo | null
   loading: boolean
   error: string | null
   refreshServerInfo: () => Promise<void>
+  currentApiUrl: string
 }
 
 const ServerContext = createContext<ServerContextType | undefined>(undefined)
@@ -26,6 +28,7 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({ children }) => {
   const [serverInfo, setServerInfo] = useState<ServerInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [currentApiUrl, setCurrentApiUrl] = useState<string>(ApiConfig.getBaseUrl())
 
   const fetchServerInfo = async () => {
     try {
@@ -47,13 +50,27 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({ children }) => {
 
   useEffect(() => {
     fetchServerInfo()
+    
+    // Слушаем изменения настроек API
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'mockService_apiSettings') {
+        const newUrl = ApiConfig.getBaseUrl()
+        setCurrentApiUrl(newUrl)
+        // Перезагружаем информацию о сервере с новыми настройками
+        fetchServerInfo()
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
   }, [])
 
   const value: ServerContextType = {
     serverInfo,
     loading,
     error,
-    refreshServerInfo
+    refreshServerInfo,
+    currentApiUrl
   }
 
   return (

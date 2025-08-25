@@ -1,4 +1,4 @@
-const API_BASE_URL = '/api'
+import { ApiConfig } from '@/utils/apiConfig'
 
 export interface SwaggerEndpoint {
   path: string
@@ -45,7 +45,9 @@ export interface MockServicePreview {
 }
 
 export class SwaggerAPI {
-  private static baseUrl = `${API_BASE_URL}/swagger`
+  private static getBaseUrl() {
+    return `${ApiConfig.getApiUrl()}/swagger`
+  }
 
   static async parseSwaggerFile(
     file: File,
@@ -58,7 +60,7 @@ export class SwaggerAPI {
       formData.append('content_type', contentType)
     }
 
-    const response = await fetch(`${this.baseUrl}/parse`, {
+    const response = await fetch(`${this.getBaseUrl()}/parse`, {
       method: 'POST',
       body: formData
     })
@@ -75,7 +77,7 @@ export class SwaggerAPI {
     content: string,
     contentType: string = 'json'
   ): Promise<SwaggerImportResult> {
-    const response = await fetch(`${this.baseUrl}/parse-content`, {
+    const response = await fetch(`${this.getBaseUrl()}/parse-content`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -107,7 +109,7 @@ export class SwaggerAPI {
       formData.append('content_type', contentType)
     }
 
-    const response = await fetch(`${this.baseUrl}/preview`, {
+    const response = await fetch(`${this.getBaseUrl()}/preview`, {
       method: 'POST',
       body: formData
     })
@@ -125,7 +127,7 @@ export class SwaggerAPI {
     basePath: string = '/api',
     contentType: string = 'json'
   ): Promise<MockServicePreview[]> {
-    const response = await fetch(`${this.baseUrl}/preview-content`, {
+    const response = await fetch(`${this.getBaseUrl()}/preview-content`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -158,7 +160,7 @@ export class SwaggerAPI {
       formData.append('content_type', contentType)
     }
 
-    const response = await fetch(`${this.baseUrl}/import`, {
+    const response = await fetch(`${this.getBaseUrl()}/import`, {
       method: 'POST',
       body: formData
     })
@@ -176,7 +178,7 @@ export class SwaggerAPI {
     basePath: string = '/api',
     contentType: string = 'json'
   ): Promise<any[]> {
-    const response = await fetch(`${this.baseUrl}/import-content`, {
+    const response = await fetch(`${this.getBaseUrl()}/import-content`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
