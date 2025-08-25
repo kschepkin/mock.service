@@ -220,10 +220,7 @@ const Navigation: React.FC = () => {
             textAlign: 'center',
             letterSpacing: '0.3px'
           }}>
-            {serverInfo 
-              ? serverInfo.base_url.replace('http://', '').replace('https://', '')
-              : currentApiUrl.replace('http://', '').replace('https://', '')
-            }
+            {currentApiUrl.replace('http://', '').replace('https://', '')}
           </Text>
           
           {/* Статус индикатор */}

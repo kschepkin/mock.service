@@ -1,76 +1,101 @@
 import React, { useState, useEffect } from 'react'
-import { Card, Form, Input, Button, Space, Typography, Alert, message, Divider } from 'antd'
+import { Card, Form, Input, Button, Space, Typography, Alert, message, Divider, Spin } from 'antd'
 import { SaveOutlined, ReloadOutlined, GlobalOutlined, ApiOutlined } from '@ant-design/icons'
+import { ApiConfig, ApiSettings } from '../utils/apiConfig'
+import { ConfigManager } from '../utils/configManager'
+import { useServerInfo } from '../contexts/ServerContext'
 
 const { Title, Text, Paragraph } = Typography
-
-interface ApiSettings {
-  domain: string
-  port?: string
-  protocol: 'http' | 'https'
-}
 
 const Settings: React.FC = () => {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(true)
   const [currentSettings, setCurrentSettings] = useState<ApiSettings>({
     domain: 'localhost',
     port: '8080',
     protocol: 'http'
   })
+  const { updateApiSettings } = useServerInfo()
 
-  // Загрузка настроек из localStorage при инициализации
+  // Загрузка настроек при инициализации
   useEffect(() => {
-    const savedSettings = localStorage.getItem('mockService_apiSettings')
-    if (savedSettings) {
-      try {
-        const settings = JSON.parse(savedSettings)
-        setCurrentSettings(settings)
-        form.setFieldsValue(settings)
-      } catch (error) {
-        console.error('Ошибка загрузки настроек:', error)
-      }
-    }
+    loadSettings()
   }, [form])
+
+  const loadSettings = async () => {
+    setInitialLoading(true)
+    try {
+      // Принудительно перезагружаем настройки из файла
+      ApiConfig.clearCache()
+      await ApiConfig.initialize()
+      const settings = ApiConfig.getSettings()
+      setCurrentSettings(settings)
+      form.setFieldsValue(settings)
+      
+      // Обновляем настройки API в контексте
+      updateApiSettings()
+    } catch (error) {
+      console.error('Ошибка загрузки настроек:', error)
+      message.error('Ошибка загрузки настроек')
+    } finally {
+      setInitialLoading(false)
+    }
+  }
 
   const handleSave = async (values: ApiSettings) => {
     setLoading(true)
     try {
-      // Сохраняем настройки в localStorage
-      localStorage.setItem('mockService_apiSettings', JSON.stringify(values))
+      await ApiConfig.saveSettings(values)
       setCurrentSettings(values)
       
-      message.success('Настройки успешно сохранены!')
+      // Обновляем настройки API в контексте
+      updateApiSettings()
       
-      // Перезагружаем страницу для применения новых настроек API
-      setTimeout(() => {
-        window.location.reload()
-      }, 1000)
+      message.success('Настройки успешно сохранены и применены!')
       
-    } catch (error) {
-      message.error('Ошибка сохранения настроек')
+    } catch (error: any) {
+      message.error(error.message || 'Ошибка сохранения настроек')
       console.error('Ошибка сохранения:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleReset = () => {
-    const defaultSettings: ApiSettings = {
-      domain: 'localhost',
-      port: '8080',
-      protocol: 'http'
+  const handleReset = async () => {
+    setLoading(true)
+    try {
+      const defaultSettings = await ApiConfig.resetSettings()
+      form.setFieldsValue(defaultSettings)
+      setCurrentSettings(defaultSettings)
+      
+      // Обновляем настройки API в контексте
+      updateApiSettings()
+      
+      message.info('Настройки сброшены к значениям по умолчанию и применены')
+    } catch (error: any) {
+      message.error(error.message || 'Ошибка сброса настроек')
+      console.error('Ошибка сброса:', error)
+    } finally {
+      setLoading(false)
     }
-    
-    form.setFieldsValue(defaultSettings)
-    localStorage.removeItem('mockService_apiSettings')
-    setCurrentSettings(defaultSettings)
-    message.info('Настройки сброшены к значениям по умолчанию')
   }
+
 
   const getCurrentUrl = () => {
     const portPart = currentSettings.port ? `:${currentSettings.port}` : ''
     return `${currentSettings.protocol}://${currentSettings.domain}${portPart}`
+  }
+
+  if (initialLoading) {
+    return (
+      <div style={{ padding: '24px', textAlign: 'center' }}>
+        <Spin size="large" />
+        <div style={{ marginTop: '16px', color: '#666' }}>
+          Загрузка настроек...
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -182,12 +207,14 @@ const Settings: React.FC = () => {
               </Button>
               <Button 
                 onClick={handleReset}
+                loading={loading}
                 icon={<ReloadOutlined />}
               >
                 Сбросить к умолчанию
               </Button>
             </Space>
           </Form.Item>
+          
         </Form>
       </Card>
 
@@ -217,13 +244,6 @@ const Settings: React.FC = () => {
         </div>
       </Card>
 
-      <Alert
-        message="Внимание"
-        description="После сохранения настроек страница будет перезагружена для применения новых параметров подключения к API."
-        type="warning"
-        showIcon
-        style={{ marginTop: '24px' }}
-      />
     </div>
   )
 }

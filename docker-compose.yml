@@ -42,6 +42,8 @@ services:
     container_name: mock-service-frontend
     ports:
       - "8002:80"
+    volumes:
+      - frontend_config:/usr/local/openresty/nginx/html/config
     depends_on:
       - backend
     restart: unless-stopped
@@ -69,6 +71,8 @@ volumes:
   mock_data:
     driver: local
   logs:
+    driver: local
+  frontend_config:
     driver: local
 
 networks:

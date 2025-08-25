@@ -1,37 +1,44 @@
-interface ApiSettings {
-  domain: string
-  port?: string
-  protocol: 'http' | 'https'
-}
-
-const DEFAULT_SETTINGS: ApiSettings = {
-  domain: 'localhost',
-  port: '8080',
-  protocol: 'http'
-}
+import { ConfigManager, ApiSettings } from './configManager'
 
 export class ApiConfig {
   private static settings: ApiSettings | null = null
+  private static isInitialized = false
 
   /**
-   * Получает настройки API из localStorage или использует значения по умолчанию
+   * Инициализация настроек
    */
-  static getSettings(): ApiSettings {
-    if (this.settings) {
-      return this.settings
+  static async initialize(): Promise<void> {
+    if (this.isInitialized) {
+      return
     }
 
     try {
-      const savedSettings = localStorage.getItem('mockService_apiSettings')
-      if (savedSettings) {
-        this.settings = JSON.parse(savedSettings)
-        return this.settings
-      }
+      this.settings = await ConfigManager.loadSettings()
+      this.isInitialized = true
     } catch (error) {
-      console.error('Ошибка загрузки настроек API:', error)
+      console.error('Error initializing API config:', error)
+      this.settings = {
+        domain: 'localhost',
+        port: '8080',
+        protocol: 'http'
+      }
+      this.isInitialized = true
+    }
+  }
+
+  /**
+   * Получает настройки API (синхронно, после инициализации)
+   */
+  static getSettings(): ApiSettings {
+    if (!this.isInitialized || !this.settings) {
+      // Fallback если не инициализировано
+      return {
+        domain: 'localhost',
+        port: '8080',
+        protocol: 'http'
+      }
     }
 
-    this.settings = DEFAULT_SETTINGS
     return this.settings
   }
 
@@ -54,8 +61,8 @@ export class ApiConfig {
   /**
    * Сохраняет настройки API
    */
-  static saveSettings(settings: ApiSettings): void {
-    localStorage.setItem('mockService_apiSettings', JSON.stringify(settings))
+  static async saveSettings(settings: ApiSettings): Promise<void> {
+    await ConfigManager.saveSettings(settings)
     this.settings = settings
   }
 
@@ -64,6 +71,16 @@ export class ApiConfig {
    */
   static clearCache(): void {
     this.settings = null
+    this.isInitialized = false
+  }
+
+  /**
+   * Сбрасывает настройки к умолчанию
+   */
+  static async resetSettings(): Promise<ApiSettings> {
+    const defaults = await ConfigManager.resetSettings()
+    this.settings = defaults
+    return defaults
   }
 
   /**
@@ -71,16 +88,20 @@ export class ApiConfig {
    */
   static isUsingDefaults(): boolean {
     const current = this.getSettings()
-    return current.domain === DEFAULT_SETTINGS.domain &&
-           current.port === DEFAULT_SETTINGS.port &&
-           current.protocol === DEFAULT_SETTINGS.protocol
+    return current.domain === 'localhost' &&
+           current.port === '8080' &&
+           current.protocol === 'http'
   }
 
   /**
    * Возвращает настройки по умолчанию
    */
   static getDefaults(): ApiSettings {
-    return { ...DEFAULT_SETTINGS }
+    return {
+      domain: 'localhost',
+      port: '8080',
+      protocol: 'http'
+    }
   }
 }
 

@@ -8,6 +8,7 @@ interface ServerContextType {
   error: string | null
   refreshServerInfo: () => Promise<void>
   currentApiUrl: string
+  updateApiSettings: () => void
 }
 
 const ServerContext = createContext<ServerContextType | undefined>(undefined)
@@ -28,12 +29,17 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({ children }) => {
   const [serverInfo, setServerInfo] = useState<ServerInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [currentApiUrl, setCurrentApiUrl] = useState<string>(ApiConfig.getBaseUrl())
+  const [currentApiUrl, setCurrentApiUrl] = useState<string>('')
 
   const fetchServerInfo = async () => {
     try {
       setLoading(true)
       setError(null)
+      
+      // Обновляем currentApiUrl каждый раз при запросе
+      const newUrl = ApiConfig.getBaseUrl()
+      setCurrentApiUrl(newUrl)
+      
       const info = await ServerAPI.getServerInfo()
       setServerInfo(info)
     } catch (err: any) {
@@ -48,21 +54,17 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({ children }) => {
     await fetchServerInfo()
   }
 
-  useEffect(() => {
+  const updateApiSettings = () => {
+    // Принудительно обновляем настройки и перезагружаем server info
+    const newUrl = ApiConfig.getBaseUrl()
+    setCurrentApiUrl(newUrl)
     fetchServerInfo()
-    
-    // Слушаем изменения настроек API
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'mockService_apiSettings') {
-        const newUrl = ApiConfig.getBaseUrl()
-        setCurrentApiUrl(newUrl)
-        // Перезагружаем информацию о сервере с новыми настройками
-        fetchServerInfo()
-      }
-    }
+  }
 
-    window.addEventListener('storage', handleStorageChange)
-    return () => window.removeEventListener('storage', handleStorageChange)
+  useEffect(() => {
+    // Инициализируем currentApiUrl с актуальными настройками
+    setCurrentApiUrl(ApiConfig.getBaseUrl())
+    fetchServerInfo()
   }, [])
 
   const value: ServerContextType = {
@@ -70,7 +72,8 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({ children }) => {
     loading,
     error,
     refreshServerInfo,
-    currentApiUrl
+    currentApiUrl,
+    updateApiSettings
   }
 
   return (

@@ -14,15 +14,29 @@ COPY . .
 # Сборка приложения
 RUN npm run build
 
-# Production образ с nginx
-FROM nginx:alpine
+# Production образ с openresty (nginx + lua)
+FROM openresty/openresty:alpine
+
+# Установка дополнительных пакетов
+RUN apk add --no-cache curl
 
 # Копирование собранного приложения
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/dist /usr/local/openresty/nginx/html
 
-# Копирование конфигурации nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Создание директории для конфигурации
+RUN mkdir -p /usr/local/openresty/nginx/html/config && \
+    chmod 777 /usr/local/openresty/nginx/html/config
+
+# Копирование конфигурации nginx  
+COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+
+# Копирование lua скрипта
+COPY write-config.lua /usr/local/openresty/nginx/write-config.lua
+
+# Создание директории и символической ссылки для совместимости
+RUN mkdir -p /usr/share/nginx && \
+    ln -sf /usr/local/openresty/nginx/html /usr/share/nginx/html
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"] 
+CMD ["openresty", "-g", "daemon off;"] 
