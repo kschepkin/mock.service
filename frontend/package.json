@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Mock Service - Универсальная система создания и управления mock API",
-  "author": "SaveLink Team",
+  "author": "Team",
   "homepage": "https://save-link.ru",
   "scripts": {
     "dev": "vite",

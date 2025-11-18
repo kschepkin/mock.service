@@ -97,17 +97,65 @@ async def get_service_logs(
 ):
     """Получить логи запросов для конкретного mock сервиса"""
     service = MockServiceService(db)
-    
+
     # Проверяем, существует ли сервис
     mock_service = await service.get_mock_service(service_id)
     if not mock_service:
         raise HTTPException(status_code=404, detail="Mock сервис не найден")
-    
+
     # Получаем логи из файлов
     logs = file_logger.get_logs(service_id=service_id, skip=skip, limit=limit)
-    
+
     # Конвертируем в словари для совместимости с frontend
     return [log.to_dict() for log in logs]
+
+
+@router.delete("/{service_id}/logs")
+async def clear_service_logs(
+    service_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """Очистить логи запросов для конкретного mock сервиса"""
+    service = MockServiceService(db)
+
+    # Проверяем, существует ли сервис
+    mock_service = await service.get_mock_service(service_id)
+    if not mock_service:
+        raise HTTPException(status_code=404, detail="Mock сервис не найден")
+
+    # Получаем все логи
+    all_logs = file_logger.get_logs(skip=0, limit=1000000)
+
+    # Фильтруем логи, оставляя только те, которые не относятся к этому сервису
+    remaining_logs = [log for log in all_logs if log.mock_service_id != service_id]
+
+    # Подсчитываем количество удаленных записей
+    deleted_count = len(all_logs) - len(remaining_logs)
+
+    # Перезаписываем основной файл логов
+    logs_dir = os.getenv("LOG_DIR", "logs")
+    main_log_file = os.path.join(logs_dir, "requests.log")
+
+    # Очищаем основной файл и записываем оставшиеся логи
+    try:
+        import json
+        with open(main_log_file, 'w', encoding='utf-8') as f:
+            for log in remaining_logs:
+                f.write(json.dumps(log.to_dict(), ensure_ascii=False) + '\n')
+
+        # Удаляем архивные файлы (они больше не актуальны после очистки)
+        for i in range(1, int(os.getenv("LOG_BACKUP_COUNT", "10")) + 1):
+            archive_file = f"{main_log_file}.{i}"
+            if os.path.exists(archive_file):
+                os.remove(archive_file)
+
+        return {
+            "message": f"Логи для mock сервиса успешно очищены",
+            "deleted_count": deleted_count,
+            "service_id": service_id
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка при очистке логов: {str(e)}")
 
 
 @router.get("/logs/all", response_model=List[dict])

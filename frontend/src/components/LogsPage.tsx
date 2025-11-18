@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Card, List, Tag, Button, Space, Badge, Typography, Collapse, Switch, Select, Input, DatePicker, Tooltip } from 'antd'
+import { Card, List, Tag, Button, Space, Badge, Typography, Collapse, Switch, Select, Input, DatePicker, Tooltip, message } from 'antd'
 import { ReloadOutlined, DeleteOutlined, SearchOutlined, CalendarOutlined } from '@ant-design/icons'
 import type { Dayjs } from 'dayjs'
 import { useParams } from 'react-router-dom'
@@ -187,8 +187,20 @@ const LogsPage: React.FC = () => {
     }
   }
 
-  const clearLogs = () => {
-    setLogs([])
+  const clearLogs = async () => {
+    if (!selectedService) {
+      message.warning('Please select a service to clear logs')
+      return
+    }
+
+    try {
+      await MockServiceAPI.clearServiceLogs(selectedService)
+      message.success('Logs cleared successfully')
+      setLogs([])
+    } catch (error) {
+      console.error('Error clearing logs:', error)
+      message.error('Failed to clear logs')
+    }
   }
 
   // Фильтрация логов по поисковому запросу и времени

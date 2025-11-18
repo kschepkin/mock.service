@@ -52,6 +52,10 @@ export class MockServiceAPI {
     })
     return response.data
   }
+
+  static async clearServiceLogs(serviceId: number): Promise<void> {
+    await api.delete(`/mock-services/${serviceId}/logs`)
+  }
 }
 
 // WebSocket клиент для логов

@@ -4,24 +4,18 @@
 
 Mock Service позволяет быстро создавать имитации API для тестирования, разработки и демонстрации приложений. Поддерживает REST, SOAP, условную логику на Python и многое другое.
 
-<div align="center">
-  <p><strong>Разработано командой</strong></p>
-  <a href="https://save-link.ru" target="_blank">
-    <img src="https://img.shields.io/badge/SaveLink-Разработка-blue?style=for-the-badge&logo=link" alt="SaveLink" />
-  </a>
-  <p><a href="https://save-link.ru" target="_blank">save-link.ru</a></p>
-</div>
-
 ![Mock Service Interface](docs/screenshots/main-interface.png)
 
 ## Ключевые возможности
 
 ### **Три стратегии ответов**
+
 - **Проксирование** - Перенаправление запросов на реальные API с настройкой задержек
-- **Статичные ответы** - Фиксированные ответы с кастомными заголовками  
+- **Статичные ответы** - Фиксированные ответы с кастомными заголовками
 - **Условная логика** - Динамические ответы на основе Python кода
 
 ### **Продвинутые функции**
+
 - **Настройка задержек** - Имитация медленных API и сетевых проблем
 - **Поддержка SOAP** - Полная поддержка SOAP/XML с автоматическим парсингом
 - **Логи в реальном времени** - WebSocket мониторинг всех запросов
@@ -32,10 +26,12 @@ Mock Service позволяет быстро создавать имитации
 ## Быстрый старт
 
 ### Требования
+
 - Docker и Docker Compose
 - Свободные порты 8001 и 8080
 
 ### Запуск за 1 минуту
+
 ```bash
 # Клонируйте репозиторий
 git clone <repository-url>
@@ -49,6 +45,7 @@ open http://localhost:8001
 ```
 
 ### Доступные адреса
+
 - **Веб-интерфейс**: http://localhost:8001
 - **API документация**: http://localhost:8080/docs
 - **Mock API**: http://localhost:8080
@@ -56,25 +53,31 @@ open http://localhost:8001
 ## Основные концепции
 
 ### Проксирование
+
 Перенаправляет запросы на существующие API. Идеально для:
+
 - Тестирования с реальными данными
 - Добавления задержек к существующим API
 - Логирования запросов к внешним сервисам
 
 **Пример настройки:**
+
 ```
 Путь: /api/users/{id}
 URL: https://jsonplaceholder.typicode.com/users/{id}
 Задержка: 1.5 секунды
 ```
 
-### Статичные ответы  
+### Статичные ответы
+
 Возвращает заранее настроенные ответы. Используется для:
+
 - Быстрого прототипирования
 - Демонстрации UI без backend
 - Тестирования edge cases
 
 **Пример ответа:**
+
 ```json
 {
   "id": 123,
@@ -85,13 +88,16 @@ URL: https://jsonplaceholder.typicode.com/users/{id}
 ```
 
 ### Условная логика
+
 Выполняет Python код для создания динамических ответов. Мощный инструмент для:
+
 - Сложной бизнес-логики
 - Симуляции различных сценариев
 
 **Доступные переменные:**
+
 - `headers` - HTTP заголовки
-- `query` - Query параметры  
+- `query` - Query параметры
 - `body` - Тело запроса
 - `method` - HTTP метод
 - `path` - URL путь
@@ -105,41 +111,45 @@ URL: https://jsonplaceholder.typicode.com/users/{id}
 ### Пример 1: Простой REST API пользователей
 
 **Создайте mock сервис:**
+
 - Путь: `/api/users`
 - Методы: `GET, POST`
 - Стратегия: `Условный ответ`
 
 **Код условий:**
+
 ```python
 # Получаем параметры запроса
 user_id = query.get("id", "")
 limit = int(query.get("limit", 10))
 
-# Проверяем авторизацию  
+# Проверяем авторизацию
 is_authenticated = 'authorization' in headers
 user_role = headers.get('x-user-role', 'guest')
 ```
 
 **Варианты ответов:**
 
-| Условие | Ответ | Код |
-|---------|--------|-----|
-| `method == "GET" and user_id != ""` | `{"id": user_id, "name": "User " + user_id}` | 200 |
-| `method == "GET" and is_authenticated` | `{"users": [], "total": 0, "limit": limit}` | 200 |
-| `method == "GET"` | `{"error": "Требуется авторизация"}` | 401 |
+| Условие                                     | Ответ                                           | Код |
+| ------------------------------------------- | ----------------------------------------------- | --- |
+| `method == "GET" and user_id != ""`         | `{"id": user_id, "name": "User " + user_id}`    | 200 |
+| `method == "GET" and is_authenticated`      | `{"users": [], "total": 0, "limit": limit}`     | 200 |
+| `method == "GET"`                           | `{"error": "Требуется авторизация"}`            | 401 |
 | `method == "POST" and user_role == "admin"` | `{"id": 123, "message": "Пользователь создан"}` | 201 |
-| `method == "POST"` | `{"error": "Недостаточно прав"}` | 403 |
+| `method == "POST"`                          | `{"error": "Недостаточно прав"}`                | 403 |
 
 ---
 
 ### Пример 2: Платежная система с валидацией
 
 **Настройка:**
+
 - Путь: `/api/payments`
 - Метод: `POST`
 - Стратегия: `Условный ответ`
 
 **Код условий:**
+
 ```python
 # Извлекаем данные платежа
 amount = 0
@@ -165,21 +175,22 @@ is_blocked_card = card_number == "4444444444444444"
 
 **Варианты ответов:**
 
-| Условие | Ответ | Код | Задержка |
-|---------|--------|-----|----------|
-| `amount <= 0` | `{"error": "Неверная сумма"}` | 400 | 0 |
-| `card_number == ""` | `{"error": "Номер карты обязателен"}` | 400 | 0 |
-| `is_blocked_card` | `{"error": "Карта заблокирована"}` | 422 | 1.0 |
-| `is_suspicious` | `{"status": "pending", "message": "Требует подтверждения"}` | 202 | 3.0 |
-| `card_type == "visa"` | `{"transaction_id": "tx_123", "status": "approved"}` | 200 | 2.0 |
-| `card_type == "mastercard"` | `{"transaction_id": "tx_456", "status": "approved"}` | 200 | 1.5 |
-| `True` | `{"error": "Неподдерживаемый тип карты"}` | 422 | 0.5 |
+| Условие                     | Ответ                                                       | Код | Задержка |
+| --------------------------- | ----------------------------------------------------------- | --- | -------- |
+| `amount <= 0`               | `{"error": "Неверная сумма"}`                               | 400 | 0        |
+| `card_number == ""`         | `{"error": "Номер карты обязателен"}`                       | 400 | 0        |
+| `is_blocked_card`           | `{"error": "Карта заблокирована"}`                          | 422 | 1.0      |
+| `is_suspicious`             | `{"status": "pending", "message": "Требует подтверждения"}` | 202 | 3.0      |
+| `card_type == "visa"`       | `{"transaction_id": "tx_123", "status": "approved"}`        | 200 | 2.0      |
+| `card_type == "mastercard"` | `{"transaction_id": "tx_456", "status": "approved"}`        | 200 | 1.5      |
+| `True`                      | `{"error": "Неподдерживаемый тип карты"}`                   | 422 | 0.5      |
 
 ---
 
 ### Пример 3: SOAP веб-сервис
 
 **Настройка:**
+
 - Путь: `/soap/UserService`
 - Метод: `POST`
 - Стратегия: `Условный ответ`
@@ -190,6 +201,7 @@ is_blocked_card = card_number == "4444444444444444"
   ```
 
 **Код условий:**
+
 ```python
 import re
 
@@ -204,23 +216,23 @@ if body:
     try:
         # Убираем переносы строк для regex
         clean_body = re.sub(r'\s+', ' ', body)
-        
+
         # Извлекаем userId с поддержкой namespace
         patterns = [
             r'<(?:\w+:)?userId[^>]*>([^<]+)</(?:\w+:)?userId>',
             r'<userId[^>]*>([^<]+)</userId>'
         ]
-        
+
         for pattern in patterns:
             match = re.search(pattern, clean_body, re.IGNORECASE)
             if match:
                 user_id = match.group(1).strip()
                 break
-        
+
         # Определяем операцию
         if 'getUserInfo' in soap_action:
             operation = "getUserInfo"
-            
+
     except Exception:
         user_id = ""
 ```
@@ -228,6 +240,7 @@ if body:
 **SOAP ответы:**
 
 **Успешный ответ:**
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -245,6 +258,7 @@ if body:
 ```
 
 **Тестирование SOAP:**
+
 ```bash
 curl -X POST \
      -H "Content-Type: text/xml; charset=utf-8" \
@@ -265,6 +279,7 @@ curl -X POST \
 ### Пример 4: Временные ограничения и бизнес-логика
 
 **Код условий:**
+
 ```python
 import datetime
 
@@ -285,12 +300,12 @@ is_premium = user_role == 'premium'
 
 **Варианты ответов:**
 
-| Условие | Ответ | Код |
-|---------|--------|-----|
-| `is_maintenance` | `{"error": "Техническое обслуживание"}` | 503 |
-| `not is_business_hours and not is_premium` | `{"error": "Сервис доступен только в рабочие часы"}` | 423 |
-| `is_weekend and user_role == 'guest'` | `{"message": "Ограниченный доступ в выходные"}` | 200 |
-| `True` | `{"status": "available", "message": "Добро пожаловать!"}` | 200 |
+| Условие                                    | Ответ                                                     | Код |
+| ------------------------------------------ | --------------------------------------------------------- | --- |
+| `is_maintenance`                           | `{"error": "Техническое обслуживание"}`                   | 503 |
+| `not is_business_hours and not is_premium` | `{"error": "Сервис доступен только в рабочие часы"}`      | 423 |
+| `is_weekend and user_role == 'guest'`      | `{"message": "Ограниченный доступ в выходные"}`           | 200 |
+| `True`                                     | `{"status": "available", "message": "Добро пожаловать!"}` | 200 |
 
 ---
 
@@ -299,12 +314,14 @@ is_premium = user_role == 'premium'
 ### Импорт схем
 
 **Swagger/OpenAPI:**
+
 1. Перейдите в раздел "Импорт Swagger"
 2. Загрузите файл или вставьте URL
 3. Выберите эндпоинты для импорта
 4. Mock сервисы создадутся автоматически
 
 **WSDL (SOAP):**
+
 1. Раздел "Импорт WSDL"
 2. Укажите URL WSDL файла
 3. Настройте базовый путь
@@ -313,16 +330,19 @@ is_premium = user_role == 'premium'
 ### Мониторинг и логи
 
 **Просмотр запросов:**
+
 - Все логи: раздел "Логи запросов"
 - По сервису: кнопка "Логи" рядом с сервисом
 - Реальное время: включите переключатель
 
 **Фильтрация:**
+
 - По тексту (путь, метод, тело)
 - По дате
 - По конкретному сервису
 
 **Информация в логах:**
+
 - Время запроса
 - HTTP метод и путь
 - Заголовки запроса/ответа
@@ -335,6 +355,7 @@ is_premium = user_role == 'premium'
 ## API Reference
 
 ### Mock сервисы
+
 ```http
 GET    /api/mock-services/        # Список сервисов
 POST   /api/mock-services/        # Создать сервис
@@ -344,6 +365,7 @@ DELETE /api/mock-services/{id}    # Удалить сервис
 ```
 
 ### Логирование
+
 ```http
 GET /api/mock-services/logs/all         # Все логи
 GET /api/mock-services/{id}/logs        # Логи сервиса
@@ -352,6 +374,7 @@ WS  /ws/logs/{id}                       # WebSocket логи сервиса
 ```
 
 ### Импорт
+
 ```http
 POST /api/swagger/parse        # Парсинг Swagger
 POST /api/swagger/import       # Импорт сервисов
@@ -366,6 +389,7 @@ POST /api/wsdl/import         # Импорт SOAP операций
 ### Python код для условий
 
 **Авторизация:**
+
 ```python
 # Проверка токена
 auth_token = headers.get('authorization', '')
@@ -377,6 +401,7 @@ is_admin = user_role == 'admin'
 ```
 
 **Валидация данных:**
+
 ```python
 # JSON валидация
 if json:
@@ -387,6 +412,7 @@ if json:
 ```
 
 **Работа с датами:**
+
 ```python
 import datetime
 now = datetime.datetime.now()
